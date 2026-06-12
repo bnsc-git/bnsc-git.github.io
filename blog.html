@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ブログ — 開発記録・お知らせ">
+  <title>ブログ — bnsc-git</title>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <nav class="nav container">
+      <a href="index.html" class="nav-logo">bnsc-git</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="メニュー">☰</button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="portfolio.html">ポートフォリオ</a></li>
+        <li><a href="blog.html">ブログ</a></li>
+        <li><a href="food-stock-master/index.html" class="btn-nav">🥦 アプリを使う</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1>ブログ</h1>
+      <p>開発記録・技術メモ・お知らせを発信しています</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container" style="max-width:720px">
+      <div id="blog-list"></div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2026 bnsc-git. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+  <script>loadBlogList();</script>
+</body>
+</html>
