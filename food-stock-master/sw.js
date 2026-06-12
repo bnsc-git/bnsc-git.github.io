@@ -1,4 +1,4 @@
-const CACHE = 'food-stock-v3';
+const CACHE = 'food-stock-v4';
 const PRECACHE = [
   './',
   './index.html',

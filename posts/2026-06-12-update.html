@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>アップデート履歴 2026-06-12 — bnsc-git</title>
+  <title>Food Stock Master アップデート（2026-06-12）— bnsc-git</title>
   <link rel="stylesheet" href="../site.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2338740530028628" crossorigin="anonymous"></script>
 </head>
@@ -35,35 +35,27 @@
 
       <h2>2026-06-12</h2>
 
-      <h3>🐛 バグ修正</h3>
+      <h3>🐛 不具合修正</h3>
       <ul>
-        <li>食材名に特殊文字が含まれる場合のXSS脆弱性を修正（<code>refreshNameDatalist</code>・レシピ検索ボタン）</li>
-        <li>数量を手入力で0にしても食材が画面から消えない問題を修正</li>
-        <li><code>persist()</code> が在庫データを二重書き込みしていたのを修正</li>
-        <li>食材追加時、過去の平均保存日数が0以下の場合に賞味期限が過去日になる問題を修正</li>
-        <li>Service Workerのキャッシュバージョンをv2に更新し、古いapp.jsが配信され続ける問題を解消</li>
+        <li>数量を手入力で 0 にしても食材が一覧から消えない問題を修正</li>
+        <li>食材追加時に賞味期限の計算がずれる場合がある問題を修正</li>
+        <li>アプリのキャッシュが更新されず古いバージョンが表示され続ける問題を修正</li>
       </ul>
 
       <h3>✨ 新機能</h3>
       <ul>
-        <li><strong>プリセットレシピ50品</strong>を追加（肉じゃが・親子丼・カレーライスなど定番家庭料理）</li>
-        <li><strong>食材データベース（65種）</strong>を追加。食材名を入力すると単位・栄養値が自動で補完される</li>
-        <li><strong>レシピタブ：期限間近の食材を可視化</strong> — 在庫に期限5日以内の食材があるレシピが上位に並ぶ。カードにアラート帯と色分けを表示</li>
-        <li><strong>買い物タブ：Amazonで探すボタン</strong>を追加 — チェックした食材をAmazonでまとめて検索できる</li>
+        <li><strong>プリセットレシピ 50 品</strong>を追加（肉じゃが・親子丼・カレーライスなど定番家庭料理）</li>
+        <li><strong>食材データベース（65 種）</strong>を追加。食材名を入力すると単位が自動で入力される</li>
+        <li><strong>レシピタブ：期限間近の食材を可視化</strong> — 在庫に賞味期限が近い食材があるレシピが上位に表示され、カードに警告を表示</li>
+        <li><strong>買い物タブ：「Amazonで探す」ボタン</strong>を追加 — チェックした食材を Amazon でまとめて検索できる</li>
         <li>設定タブに公式ホームページへのリンクを追加</li>
       </ul>
 
-      <h3>🎨 UI改善</h3>
+      <h3>🎨 UI 改善</h3>
       <ul>
         <li>「在庫へ入庫」ボタンを「食材へ追加」に変更</li>
-        <li>ホームタブの「Googleレシピを検索（新タブ）」を「レシピを検索」にシンプル化</li>
-        <li>ホームページナビの「アプリを使う」ボタンが緑でつぶれて見えた問題を修正</li>
-      </ul>
-
-      <h3>💰 収益化</h3>
-      <ul>
-        <li>Amazonアソシエイトリンク（<code>bnscafil-22</code>）を統合</li>
-        <li>Google AdSense（<code>ca-pub-2338740530028628</code>）を公式サイト全ページに設置</li>
+        <li>ホームタブのレシピ検索ボタンのラベルをシンプル化</li>
+        <li>ホームページナビの「アプリを使う」ボタンの文字色が見づらかった問題を修正</li>
       </ul>
 
     </div>
@@ -72,7 +64,6 @@
   <footer class="site-footer">
     <div class="container">
       <p>© 2026 bnsc-git. All rights reserved.</p>
-      <a href="https://ko-fi.com/YOUR_KOFI_USERNAME" target="_blank" rel="noopener" class="kofi-footer">☕ Ko-fiで応援する</a>
     </div>
   </footer>
 

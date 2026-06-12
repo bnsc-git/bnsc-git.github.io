@@ -12,6 +12,7 @@ let STATE = {
 
 let nutritionChart = null;
 let ingRowCounter = 0;
+const inventorySelected = new Set();
 
 // ---- Affiliate / Monetization Config ----
 // ▼ ここに各サービスのIDを設定してください
@@ -275,7 +276,10 @@ function renderInventory() {
 
   el.innerHTML = items.map(item => {
     const st = expiryStatus(item.expiryDate);
-    return `<div class="inventory-item ${st}">
+    const sel = inventorySelected.has(item.id);
+    return `<div class="inventory-item ${st}${sel ? ' selected' : ''}" id="inv-item-${item.id}">
+      <input type="checkbox" class="item-check" ${sel ? 'checked' : ''}
+        onchange="toggleInventorySelect('${item.id}', this.checked)">
       <div class="item-info">
         <div class="item-name">${escHtml(item.name)}
           <span class="item-expiry-badge ${st}">${daysLabel(item.expiryDate)}</span>
@@ -315,7 +319,55 @@ function updateQty(id, val) {
 function deleteInventoryItem(id) {
   if (!confirm('この食材を削除しますか？')) return;
   STATE.inventory = STATE.inventory.filter(i => i.id !== id);
+  inventorySelected.delete(id);
   persist();
+  renderInventory();
+  updateInventoryBulkBar();
+  renderStats();
+  renderAlerts();
+}
+
+function toggleInventorySelect(id, checked) {
+  if (checked) inventorySelected.add(id);
+  else inventorySelected.delete(id);
+  const el = document.getElementById('inv-item-' + id);
+  if (el) el.classList.toggle('selected', checked);
+  updateInventoryBulkBar();
+}
+
+function updateInventoryBulkBar() {
+  const bar = document.getElementById('inventory-bulk-bar');
+  const countEl = document.getElementById('inventory-select-count');
+  if (!bar) return;
+  const n = inventorySelected.size;
+  bar.style.display = n ? 'flex' : 'none';
+  if (countEl) countEl.textContent = `${n}件選択中`;
+}
+
+function addSelectedToShopping() {
+  if (!inventorySelected.size) return;
+  inventorySelected.forEach(id => {
+    const item = STATE.inventory.find(i => i.id === id);
+    if (!item) return;
+    STATE.shoppingList.push({
+      id: uid(), name: item.name, quantity: item.quantity,
+      unit: item.unit, checked: false, struck: false
+    });
+  });
+  inventorySelected.clear();
+  persist();
+  updateInventoryBulkBar();
+  renderInventory();
+  alert('買い物リストに追加しました');
+}
+
+function deleteSelectedInventory() {
+  if (!inventorySelected.size) return;
+  if (!confirm(`${inventorySelected.size}件を削除しますか？`)) return;
+  STATE.inventory = STATE.inventory.filter(i => !inventorySelected.has(i.id));
+  inventorySelected.clear();
+  persist();
+  updateInventoryBulkBar();
   renderInventory();
   renderStats();
   renderAlerts();
@@ -437,7 +489,13 @@ function renderShoppingList() {
       <input type="checkbox" ${item.checked ? 'checked' : ''}
         onchange="toggleShopping('${item.id}', this.checked)">
       <span class="shopping-name${item.struck ? ' struck' : ''}" onclick="strikeItem('${item.id}')">${escHtml(item.name)}</span>
-      <span class="shopping-meta">${item.quantity} ${escHtml(item.unit)}</span>
+      <div class="item-qty-wrap">
+        <button class="qty-btn" onclick="adjustShoppingQty('${item.id}',-1)">−</button>
+        <input class="qty-input" type="number" value="${item.quantity}" min="0" step="0.1"
+          onchange="setShoppingQty('${item.id}',this.value)" onclick="this.select()">
+        <span class="qty-unit">${escHtml(item.unit)}</span>
+        <button class="qty-btn" onclick="adjustShoppingQty('${item.id}',1)">＋</button>
+      </div>
     </div>
   `).join('');
   updateShoppingBadge();
@@ -460,6 +518,21 @@ function strikeItem(id) {
   item.struck = !item.struck;
   persist();
   renderShoppingList();
+}
+
+function adjustShoppingQty(id, delta) {
+  const item = STATE.shoppingList.find(i => i.id === id);
+  if (!item) return;
+  item.quantity = Math.max(0, +(item.quantity + delta).toFixed(3));
+  persist();
+  renderShoppingList();
+}
+
+function setShoppingQty(id, val) {
+  const item = STATE.shoppingList.find(i => i.id === id);
+  if (!item) return;
+  item.quantity = Math.max(0, parseFloat(val) || 0);
+  persist();
 }
 
 function deleteBulkShopping() {

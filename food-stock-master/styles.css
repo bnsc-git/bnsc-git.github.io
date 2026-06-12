@@ -348,6 +348,34 @@ body {
 .item-expiry-badge.soon    { background: var(--warning-light); color: var(--warning); }
 .item-expiry-badge.fresh   { background: var(--primary-light); color: var(--primary); }
 
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--primary-light);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.bulk-count {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+.item-check {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.inventory-item.selected {
+  border-left: 3px solid var(--primary);
+  background: #f0fdf4;
+}
+
 .item-qty-wrap {
   display: flex;
   align-items: center;

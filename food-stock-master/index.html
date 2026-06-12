@@ -70,6 +70,11 @@
             placeholder="🔍 食材を検索..." oninput="renderInventory()">
           <button class="btn btn-primary btn-circle" onclick="openAddInventoryModal()">＋</button>
         </div>
+        <div class="bulk-bar" id="inventory-bulk-bar" style="display:none">
+          <span id="inventory-select-count" class="bulk-count"></span>
+          <button class="btn btn-success btn-sm" onclick="addSelectedToShopping()">🛒 買い物リストへ</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteSelectedInventory()">🗑️ 一括削除</button>
+        </div>
         <div id="inventory-list"></div>
       </section>
 
