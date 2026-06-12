@@ -1,5 +1,12 @@
 [
   {
+    "slug": "2026-06-12-update3",
+    "title": "Food Stock Master アップデート（2026-06-12 #3）",
+    "date": "2026-06-12",
+    "summary": "食材タブにチェックボックスと一括操作を追加。買い物リストも大幅強化（数量±・自動マージ・賞味期限±・UI整理）。",
+    "tags": ["アップデート", "Food Stock Master"]
+  },
+  {
     "slug": "2026-06-12-update2",
     "title": "Food Stock Master アップデート（2026-06-12 #2）",
     "date": "2026-06-12",

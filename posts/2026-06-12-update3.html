@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Stock Master アップデート（2026-06-12 #3）— bnsc-git</title>
+  <link rel="stylesheet" href="../site.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2338740530028628" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <header class="site-header">
+    <nav class="nav container">
+      <a href="../index.html" class="nav-logo">bnsc-git</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="メニュー">☰</button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="../portfolio.html">ポートフォリオ</a></li>
+        <li><a href="../blog.html">ブログ</a></li>
+        <li><a href="../food-stock-master/index.html" class="btn-nav">🥦 アプリを使う</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="article-header">
+      <p class="article-back"><a href="../blog.html">← ブログ一覧に戻る</a></p>
+      <h1>Food Stock Master アップデート履歴</h1>
+      <div class="article-meta">
+        <span>2026年6月12日</span>
+        <span>アップデート</span>
+      </div>
+    </div>
+
+    <div class="article-body">
+
+      <h2>2026-06-12 #3</h2>
+
+      <h3>✨ 新機能</h3>
+      <ul>
+        <li>
+          <strong>食材タブ：チェックボックスと一括操作</strong> —
+          各食材にチェックボックスを追加。チェックした食材をまとめて買い物リストへ追加したり、一括で削除したりできます。
+          「全選択 / 全解除」ボタンで一気に選択状態を切り替えられます。
+        </li>
+        <li>
+          <strong>買い物リスト：リスト内で数量を ＋ / − 調整</strong> —
+          リストに追加済みの食材の数量を、その場で ＋ / − ボタンで増減できます。
+        </li>
+        <li>
+          <strong>買い物リスト：同じ食材は自動でまとめる</strong> —
+          同じ名前・同じ単位の食材を追加した場合、数量を合算して1行にまとめます。
+        </li>
+        <li>
+          <strong>買い物リスト：チェックした食材だけ在庫へ追加</strong> —
+          「🛒 食材へ追加」を押すと、チェックを入れた食材のみ在庫に移動します。
+          チェックしていない食材はリストに残るので、まとめ買い後に少しずつ管理できます。
+        </li>
+        <li>
+          <strong>買い物リスト：賞味期限を ＋ / − で調整</strong> —
+          在庫への追加時に表示される賞味期限を、日付入力に加えて ＋ / − ボタンで 1 日単位で調整できます。
+        </li>
+        <li>
+          <strong>買い物リスト：全選択 / 全解除ボタン</strong> — 食材タブと同様に、一括で選択状態を切り替えられます。
+        </li>
+      </ul>
+
+      <h3>🎨 UI 改善</h3>
+      <ul>
+        <li>
+          <strong>買い物タブのボタン整理</strong> —
+          「食材へ追加」「Amazonで探す」「削除」はチェックを入れたときだけ表示されるようになり、
+          画面がスッキリしました。
+        </li>
+        <li>設定画面のボタンフォントが不揃いだった問題を修正しました。</li>
+      </ul>
+
+      <h3>🐛 不具合修正・品質向上</h3>
+      <ul>
+        <li>
+          <strong>レシピの単位ちがい警告</strong> —
+          在庫が「牛乳 1 本」で、レシピが「牛乳 500ml」を必要とする場合など、
+          単位が異なる食材については「単位が違います」と警告を表示するようにしました。
+          誤って在庫数値が書き換わるバグも解消されています。
+        </li>
+        <li>データのインポート時に、不正なファイル形式を読み込んだ場合のエラー処理を強化しました。</li>
+      </ul>
+
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2026 bnsc-git. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../site.js"></script>
+</body>
+</html>
