@@ -104,20 +104,8 @@ function getInventoryNames() {
 
 function refreshNameDatalist() {
   const dl = document.getElementById('all-item-names');
-  if (dl) {
-    dl.innerHTML = getInventoryNames().map(n => `<option value="${escHtml(n)}">`).join('');
-  }
-  const udl = document.getElementById('unit-list');
-  if (udl) {
-    const base = ['個','g','kg','ml','L','本','枚','袋','パック','缶','箱','切れ','合','束'];
-    const used = [
-      ...STATE.inventory.map(i => i.unit),
-      ...STATE.shoppingList.map(i => i.unit),
-      ...STATE.customRecipes.flatMap(r => r.ingredients.map(ing => ing.unit))
-    ].filter(Boolean);
-    const all = [...new Set([...base, ...used])].filter(Boolean);
-    udl.innerHTML = all.map(u => `<option value="${escHtml(u)}">`).join('');
-  }
+  if (!dl) return;
+  dl.innerHTML = getInventoryNames().map(n => `<option value="${escHtml(n)}">`).join('');
 }
 
 // ---- Tab Switching ----
@@ -546,12 +534,6 @@ function updateShoppingBulkBar() {
   const n = STATE.shoppingList.filter(i => i.checked).length;
   bar.style.display = n ? 'flex' : 'none';
   if (countEl) countEl.textContent = `${n}件選択中`;
-}
-
-function deleteShopping(id) {
-  STATE.shoppingList = STATE.shoppingList.filter(i => i.id !== id);
-  persist();
-  renderShoppingList();
 }
 
 function strikeItem(id) {
@@ -1076,14 +1058,18 @@ function importData(evt) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
+      if (typeof data !== 'object' || data === null) throw new Error('invalid');
       if (!confirm('現在のデータを上書きしますか？')) return;
-      STATE.inventory          = data.inventory          || [];
-      STATE.shoppingList       = data.shoppingList       || [];
-      STATE.customRecipes      = data.customRecipes      || [];
-      STATE.consumptionHistory = data.consumptionHistory || [];
+      STATE.inventory          = Array.isArray(data.inventory)          ? data.inventory          : [];
+      STATE.shoppingList       = Array.isArray(data.shoppingList)       ? data.shoppingList       : [];
+      STATE.customRecipes      = Array.isArray(data.customRecipes)      ? data.customRecipes      : [];
+      STATE.consumptionHistory = Array.isArray(data.consumptionHistory) ? data.consumptionHistory : [];
+      inventorySelected.clear();
       persist();
       renderDashboard();
       updateShoppingBadge();
+      updateShoppingBulkBar();
+      updateInventoryBulkBar();
       alert('インポート完了しました');
     } catch {
       alert('JSONファイルの読み込みに失敗しました');
@@ -1098,8 +1084,11 @@ function clearAllData() {
     localStorage.removeItem(k)
   );
   STATE = { inventory:[], shoppingList:[], customRecipes:[], consumptionHistory:[] };
+  inventorySelected.clear();
   renderDashboard();
   updateShoppingBadge();
+  updateShoppingBulkBar();
+  updateInventoryBulkBar();
   alert('データを削除しました');
 }
 
@@ -1112,17 +1101,9 @@ function escHtml(str) {
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function escJs(str) {
-  return String(str ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');
-}
-
 function affiliateAmazon(query) {
   const url = `https://www.amazon.co.jp/s?k=${encodeURIComponent(query)}`;
   return AFFILIATE.amazonTag ? `${url}&tag=${AFFILIATE.amazonTag}` : url;
-}
-
-function affiliateRakuten(query) {
-  return `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(query)}/`;
 }
 
 // ====================================================
