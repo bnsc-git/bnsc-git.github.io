@@ -1,5 +1,12 @@
 [
   {
+    "slug": "2026-06-12-update2",
+    "title": "Food Stock Master アップデート（2026-06-12 #2）",
+    "date": "2026-06-12",
+    "summary": "レシピ検索・編集機能、一括削除、数量±ボタン、説明の折り畳みなどUI改善を大幅追加。",
+    "tags": ["アップデート", "Food Stock Master"]
+  },
+  {
     "slug": "2026-06-12-update",
     "title": "Food Stock Master アップデート（2026-06-12）",
     "date": "2026-06-12",

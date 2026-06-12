@@ -436,9 +436,8 @@ function renderShoppingList() {
     <div class="shopping-item ${item.checked ? 'checked' : ''}">
       <input type="checkbox" ${item.checked ? 'checked' : ''}
         onchange="toggleShopping('${item.id}', this.checked)">
-      <span class="shopping-name">${escHtml(item.name)}</span>
+      <span class="shopping-name${item.struck ? ' struck' : ''}" onclick="strikeItem('${item.id}')">${escHtml(item.name)}</span>
       <span class="shopping-meta">${item.quantity} ${escHtml(item.unit)}</span>
-      <button class="icon-btn" onclick="deleteShopping('${item.id}')">🗑️</button>
     </div>
   `).join('');
   updateShoppingBadge();
@@ -453,6 +452,30 @@ function deleteShopping(id) {
   STATE.shoppingList = STATE.shoppingList.filter(i => i.id !== id);
   persist();
   renderShoppingList();
+}
+
+function strikeItem(id) {
+  const item = STATE.shoppingList.find(i => i.id === id);
+  if (!item) return;
+  item.struck = !item.struck;
+  persist();
+  renderShoppingList();
+}
+
+function deleteBulkShopping() {
+  const checked = STATE.shoppingList.filter(i => i.checked);
+  if (!checked.length) { alert('削除する食材にチェックを入れてください'); return; }
+  if (!confirm(`${checked.length}件を削除しますか？`)) return;
+  STATE.shoppingList = STATE.shoppingList.filter(i => !i.checked);
+  persist();
+  renderShoppingList();
+}
+
+function modalAdjustQty(delta) {
+  const el = document.getElementById('sh-qty');
+  if (!el) return;
+  const val = Math.max(0, (parseFloat(el.value) || 0) + delta);
+  el.value = Number.isInteger(val) ? val : val.toFixed(1);
 }
 
 function updateShoppingBadge() {
@@ -473,7 +496,11 @@ function openAddShoppingModal() {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">数量</label>
-        <input id="sh-qty" class="form-input" type="number" value="1" min="0" step="0.1">
+        <div class="item-qty-wrap" style="margin-top:2px">
+          <button type="button" class="qty-btn" onclick="modalAdjustQty(-1)">−</button>
+          <input id="sh-qty" class="qty-input" type="number" value="1" min="0" step="0.1">
+          <button type="button" class="qty-btn" onclick="modalAdjustQty(1)">＋</button>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">単位</label>
@@ -498,7 +525,7 @@ function addShoppingItem() {
   const unit = document.getElementById('sh-unit').value.trim();
   if (!name) { alert('食材名を入力してください'); return; }
 
-  STATE.shoppingList.push({ id: uid(), name, quantity: qty, unit, checked: false });
+  STATE.shoppingList.push({ id: uid(), name, quantity: qty, unit, checked: false, struck: false });
   persist();
   closeModal();
   renderShoppingList();
@@ -596,21 +623,26 @@ function getRecipeUrgency(recipe) {
 
 function renderRecipes() {
   const el = document.getElementById('recipe-list');
-  if (!STATE.customRecipes.length) {
+  const q = (document.getElementById('recipe-search')?.value || '').toLowerCase();
+
+  const filtered = STATE.customRecipes.filter(r =>
+    !q || r.name.toLowerCase().includes(q) ||
+    r.ingredients.some(i => i.name.toLowerCase().includes(q))
+  );
+
+  if (!filtered.length) {
     el.innerHTML = `<div class="empty-state">
       <div class="empty-icon">🍳</div>
-      <div class="empty-text">レシピを追加してください</div>
+      <div class="empty-text">${q ? '見つかりません' : 'レシピを追加してください'}</div>
     </div>`;
     return;
   }
 
-  // 期限間近の食材があるレシピを上位に
-  const sorted = STATE.customRecipes
+  const sorted = filtered
     .map(r => ({ r, u: getRecipeUrgency(r) }))
     .sort((a, b) => a.u.minDays - b.u.minDays);
 
   el.innerHTML = sorted.map(({ r: recipe, u: urgency }) => {
-    const urgentNames = new Set(urgency.items.map(i => i.name));
     const cardMod = urgency.items.length
       ? (urgency.minDays < 0 ? ' recipe-expired' : urgency.minDays <= 3 ? ' recipe-urgent' : ' recipe-warn')
       : '';
@@ -630,14 +662,24 @@ function renderRecipes() {
         : `<span class="ingredient-chip">${escHtml(i.name)} ${i.quantity}${escHtml(i.unit)}</span>`;
     }).join('');
 
+    const descHtml = recipe.description
+      ? recipe.description.length > 60
+        ? `<div class="recipe-desc-wrap">
+            <div class="recipe-desc collapsed" id="desc-${recipe.id}">${escHtml(recipe.description)}</div>
+            <button class="desc-toggle" onclick="toggleDesc('${recipe.id}')">もっと見る</button>
+          </div>`
+        : `<div class="recipe-desc">${escHtml(recipe.description)}</div>`
+      : '';
+
     return `
     <div class="recipe-card${cardMod}">
       ${alertHtml}
       <div class="recipe-name">${escHtml(recipe.name)}</div>
-      ${recipe.description ? `<div class="recipe-desc">${escHtml(recipe.description)}</div>` : ''}
+      ${descHtml}
       <div class="ingredient-chips">${chipHtml}</div>
       <div class="recipe-actions">
         <button class="btn btn-success btn-sm" onclick="cookRecipe('${recipe.id}')">🍽️ 作って消費</button>
+        <button class="btn btn-secondary btn-sm" onclick="openEditRecipeModal('${recipe.id}')">✏️ 編集</button>
         <button class="btn btn-secondary btn-sm" data-recipe="${escHtml(recipe.name)}"
           onclick="searchRecipe(this)">🔍 検索</button>
         <button class="btn btn-danger btn-sm" onclick="deleteRecipe('${recipe.id}')">🗑️</button>
@@ -775,6 +817,77 @@ function saveRecipe() {
   persist();
   closeModal();
   renderRecipes();
+}
+
+function toggleDesc(id) {
+  const el = document.getElementById('desc-' + id);
+  const btn = el ? el.nextElementSibling : null;
+  if (!el || !btn) return;
+  const collapsed = el.classList.toggle('collapsed');
+  btn.textContent = collapsed ? 'もっと見る' : '閉じる';
+}
+
+function buildIngRowWithValues(ing) {
+  const idx = ingRowCounter++;
+  return `<div class="ing-row" id="ing-${idx}">
+    <input type="text"   class="ing-name" placeholder="食材名" list="all-item-names" value="${escHtml(ing.name)}">
+    <input type="number" class="ing-qty"  placeholder="数量" value="${ing.quantity}" min="0" step="0.1">
+    <input type="text"   class="ing-unit" placeholder="単位" list="unit-list" value="${escHtml(ing.unit)}">
+    <button class="ing-remove" onclick="removeIngRow(${idx})">✕</button>
+  </div>`;
+}
+
+function openEditRecipeModal(id) {
+  const recipe = STATE.customRecipes.find(r => r.id === id);
+  if (!recipe) return;
+  refreshNameDatalist();
+  ingRowCounter = 0;
+  showModal('レシピを編集', `
+    <div class="form-group">
+      <label class="form-label">レシピ名 *</label>
+      <input id="rcp-name" class="form-input" type="text" value="${escHtml(recipe.name)}" placeholder="例: 肉じゃが">
+    </div>
+    <div class="form-group">
+      <label class="form-label">説明（任意）</label>
+      <textarea id="rcp-desc" class="form-input" rows="2" placeholder="作り方のメモ…">${escHtml(recipe.description || '')}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">材料</label>
+      <div id="ing-container">${recipe.ingredients.map(i => buildIngRowWithValues(i)).join('')}</div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="addIngRow()">＋ 材料を追加</button>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveEditRecipe('${id}')">保存する</button>
+  `);
+}
+
+function saveEditRecipe(id) {
+  const name = document.getElementById('rcp-name').value.trim();
+  const desc = document.getElementById('rcp-desc').value.trim();
+  if (!name) { alert('レシピ名を入力してください'); return; }
+  const ingredients = [];
+  document.querySelectorAll('#ing-container .ing-row').forEach(row => {
+    const n = row.querySelector('.ing-name').value.trim();
+    const q = parseFloat(row.querySelector('.ing-qty').value) || 0;
+    const u = row.querySelector('.ing-unit').value.trim();
+    if (n) ingredients.push({ name: n, quantity: q, unit: u });
+  });
+  const idx = STATE.customRecipes.findIndex(r => r.id === id);
+  if (idx !== -1) {
+    STATE.customRecipes[idx] = { ...STATE.customRecipes[idx], name, description: desc, ingredients };
+  }
+  persist();
+  closeModal();
+  renderRecipes();
+}
+
+function loadPresetRecipes() {
+  const existing = new Set(STATE.customRecipes.map(r => r.name));
+  const toAdd = PRESET_RECIPES.filter(r => !existing.has(r.name));
+  if (!toAdd.length) { alert('すべてのプリセットレシピはすでに追加されています'); return; }
+  STATE.customRecipes.push(...toAdd.map(r => ({ ...r, id: uid() })));
+  persist();
+  renderRecipes();
+  alert(`${toAdd.length}件のプリセットレシピを追加しました`);
 }
 
 // ====================================================

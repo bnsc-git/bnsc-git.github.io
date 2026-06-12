@@ -78,7 +78,8 @@
         <div class="action-bar">
           <button class="btn btn-primary" onclick="openAddShoppingModal()">＋ リストに追加</button>
           <button class="btn btn-success" onclick="openCheckoutModal()">🛒 食材へ追加</button>
-          <button class="btn btn-amazon" onclick="openAmazonSearch()">Amazon</button>
+          <button class="btn btn-amazon" onclick="openAmazonSearch()">Amazonで探す</button>
+          <button class="btn btn-danger" onclick="deleteBulkShopping()" title="チェックした食材を一括削除">🗑️</button>
         </div>
         <div id="shopping-list"></div>
       </section>
@@ -86,13 +87,19 @@
       <!-- Recipes -->
       <section id="tab-recipes" class="tab-pane">
         <div class="action-bar">
-          <button class="btn btn-primary" onclick="openAddRecipeModal()">＋ レシピ追加</button>
+          <input type="search" id="recipe-search" class="search-input"
+            placeholder="🔍 レシピを検索..." oninput="renderRecipes()">
+          <button class="btn btn-primary btn-circle" onclick="openAddRecipeModal()">＋</button>
         </div>
         <div id="recipe-list"></div>
       </section>
 
       <!-- Settings -->
       <section id="tab-settings" class="tab-pane">
+        <div class="card">
+          <div class="card-title">🍳 プリセットレシピ</div>
+          <button class="btn btn-secondary btn-full" onclick="loadPresetRecipes()">📥 プリセットレシピを追加</button>
+        </div>
         <div class="card">
           <div class="card-title">💾 データ管理</div>
           <div class="settings-group">
