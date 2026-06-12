@@ -511,13 +511,13 @@ function openCheckoutModal() {
     </div>`;
   }).join('');
 
-  showModal('在庫へ入庫', `
+  showModal('食材へ追加', `
     <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
       賞味期限を確認して一括で在庫へ追加します
     </p>
     ${rows}
     <div style="margin-top:14px">
-      <button class="btn btn-primary btn-full" onclick="checkoutAll()">✅ 全て在庫へ追加</button>
+      <button class="btn btn-primary btn-full" onclick="checkoutAll()">✅ 食材へ追加する</button>
     </div>
   `);
 }
