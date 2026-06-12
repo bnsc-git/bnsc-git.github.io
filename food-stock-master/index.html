@@ -83,10 +83,13 @@
       <section id="tab-shopping" class="tab-pane">
         <div class="action-bar">
           <button class="btn btn-primary" onclick="openAddShoppingModal()">＋ リストに追加</button>
-          <button class="btn btn-success" onclick="openCheckoutModal()">🛒 食材へ追加</button>
           <button class="btn btn-secondary btn-sm" onclick="toggleAllShopping()">全選択/解除</button>
-          <button class="btn btn-amazon" onclick="openAmazonSearch()">Amazonで探す</button>
-          <button class="btn btn-danger" onclick="deleteBulkShopping()" title="チェックした食材を一括削除">🗑️</button>
+        </div>
+        <div class="bulk-bar" id="shopping-bulk-bar" style="display:none">
+          <span id="shopping-select-count" class="bulk-count"></span>
+          <button class="btn btn-success btn-sm" onclick="openCheckoutModal()">🛒 食材へ追加</button>
+          <button class="btn btn-amazon btn-sm" onclick="openAmazonSearch()">Amazonで探す</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteBulkShopping()">🗑️</button>
         </div>
         <div id="shopping-list"></div>
       </section>

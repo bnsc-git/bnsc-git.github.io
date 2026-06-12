@@ -104,8 +104,20 @@ function getInventoryNames() {
 
 function refreshNameDatalist() {
   const dl = document.getElementById('all-item-names');
-  if (!dl) return;
-  dl.innerHTML = getInventoryNames().map(n => `<option value="${escHtml(n)}">`).join('');
+  if (dl) {
+    dl.innerHTML = getInventoryNames().map(n => `<option value="${escHtml(n)}">`).join('');
+  }
+  const udl = document.getElementById('unit-list');
+  if (udl) {
+    const base = ['個','g','kg','ml','L','本','枚','袋','パック','缶','箱','切れ','合','束'];
+    const used = [
+      ...STATE.inventory.map(i => i.unit),
+      ...STATE.shoppingList.map(i => i.unit),
+      ...STATE.customRecipes.flatMap(r => r.ingredients.map(ing => ing.unit))
+    ].filter(Boolean);
+    const all = [...new Set([...base, ...used])].filter(Boolean);
+    udl.innerHTML = all.map(u => `<option value="${escHtml(u)}">`).join('');
+  }
 }
 
 // ---- Tab Switching ----
@@ -497,6 +509,7 @@ function renderShoppingList() {
       <div class="empty-text">買い物リストは空です</div>
     </div>`;
     updateShoppingBadge();
+    updateShoppingBulkBar();
     return;
   }
 
@@ -515,11 +528,24 @@ function renderShoppingList() {
     </div>
   `).join('');
   updateShoppingBadge();
+  updateShoppingBulkBar();
 }
 
 function toggleShopping(id, checked) {
   const item = STATE.shoppingList.find(i => i.id === id);
-  if (item) { item.checked = checked; persist(); }
+  if (!item) return;
+  item.checked = checked;
+  persist();
+  updateShoppingBulkBar();
+}
+
+function updateShoppingBulkBar() {
+  const bar = document.getElementById('shopping-bulk-bar');
+  const countEl = document.getElementById('shopping-select-count');
+  if (!bar) return;
+  const n = STATE.shoppingList.filter(i => i.checked).length;
+  bar.style.display = n ? 'flex' : 'none';
+  if (countEl) countEl.textContent = `${n}件選択中`;
 }
 
 function deleteShopping(id) {
