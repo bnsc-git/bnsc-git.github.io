@@ -16,7 +16,7 @@ let ingRowCounter = 0;
 // ---- Affiliate / Monetization Config ----
 // ▼ ここに各サービスのIDを設定してください
 const AFFILIATE = {
-  amazonTag:  'bnscgit-22',              // AmazonアソシエイトのトラッキングID
+  amazonTag:  'bnscafil-22',             // AmazonアソシエイトのトラッキングID
   kofi:       'YOUR_KOFI_USERNAME',      // Ko-fiのユーザー名
   paypay:     'YOUR_PAYPAY_URL',         // PayPay.meのURL（例: https://paypay.ne.jp/qr/XXXX）
 };
@@ -577,6 +577,25 @@ function checkoutAll() {
 // ====================================================
 // RECIPES
 // ====================================================
+
+// 食材の期限情報をレシピ単位で集計
+function getRecipeUrgency(recipe) {
+  const items = [];
+  let minDays = Infinity;
+  recipe.ingredients.forEach(ing => {
+    const nearest = STATE.inventory
+      .filter(i => i.name === ing.name && i.quantity > 0)
+      .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))[0];
+    if (!nearest) return;
+    const d = daysLeft(nearest.expiryDate);
+    if (d <= 5) {
+      items.push({ name: ing.name, days: d, date: nearest.expiryDate });
+      if (d < minDays) minDays = d;
+    }
+  });
+  return { items, minDays };
+}
+
 function renderRecipes() {
   const el = document.getElementById('recipe-list');
   if (!STATE.customRecipes.length) {
@@ -587,30 +606,52 @@ function renderRecipes() {
     return;
   }
 
-  el.innerHTML = STATE.customRecipes.map(recipe => `
-    <div class="recipe-card">
+  // 期限間近の食材があるレシピを上位に
+  const sorted = STATE.customRecipes
+    .map(r => ({ r, u: getRecipeUrgency(r) }))
+    .sort((a, b) => a.u.minDays - b.u.minDays);
+
+  el.innerHTML = sorted.map(({ r: recipe, u: urgency }) => {
+    const urgentNames = new Set(urgency.items.map(i => i.name));
+    const cardMod = urgency.items.length
+      ? (urgency.minDays < 0 ? ' recipe-expired' : urgency.minDays <= 3 ? ' recipe-urgent' : ' recipe-warn')
+      : '';
+
+    const alertHtml = urgency.items.length
+      ? `<div class="recipe-expiry-alert">⚠️ 期限間近：${
+          urgency.items.map(i =>
+            `<strong>${escHtml(i.name)}</strong>（${daysLabel(i.date)}）`
+          ).join('　')
+        }</div>`
+      : '';
+
+    const chipHtml = recipe.ingredients.map(i => {
+      const ui = urgency.items.find(u => u.name === i.name);
+      return ui
+        ? `<span class="ingredient-chip chip-urgent">${escHtml(i.name)} ${i.quantity}${escHtml(i.unit)}<span class="chip-expiry">${daysLabel(ui.date)}</span></span>`
+        : `<span class="ingredient-chip">${escHtml(i.name)} ${i.quantity}${escHtml(i.unit)}</span>`;
+    }).join('');
+
+    return `
+    <div class="recipe-card${cardMod}">
+      ${alertHtml}
       <div class="recipe-name">${escHtml(recipe.name)}</div>
       ${recipe.description ? `<div class="recipe-desc">${escHtml(recipe.description)}</div>` : ''}
-      <div class="ingredient-chips">
-        ${recipe.ingredients.map(i =>
-          `<span class="ingredient-chip">${escHtml(i.name)} ${i.quantity}${escHtml(i.unit)}</span>`
-        ).join('')}
-      </div>
+      <div class="ingredient-chips">${chipHtml}</div>
       <div class="recipe-actions">
         <button class="btn btn-success btn-sm" onclick="cookRecipe('${recipe.id}')">🍽️ 作って消費</button>
         <button class="btn btn-secondary btn-sm" data-recipe="${escHtml(recipe.name)}"
-          onclick="searchRecipe(this)">
-          🔍 検索
-        </button>
+          onclick="searchRecipe(this)">🔍 検索</button>
         <button class="btn btn-danger btn-sm" onclick="deleteRecipe('${recipe.id}')">🗑️</button>
       </div>
       <div class="affiliate-strip">
-        <span class="affiliate-label">食材を購入：</span>
-        <a href="${affiliateAmazon(recipe.name + ' 食材')}" target="_blank" rel="noopener sponsored" class="affiliate-link amazon">🛒 Amazon</a>
+        <span class="affiliate-label">購入：</span>
+        <a href="${affiliateAmazon(recipe.name + ' 調味料')}" target="_blank" rel="noopener sponsored" class="affiliate-link amazon">🛒 調味料</a>
+        <a href="${affiliateAmazon(recipe.name + ' キッチン用品')}" target="_blank" rel="noopener sponsored" class="affiliate-link amazon-sub">🍳 用品</a>
         <a href="${affiliateRakuten(recipe.name + ' 食材')}" target="_blank" rel="noopener sponsored" class="affiliate-link rakuten">🛍️ 楽天</a>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function searchRecipe(btn) {
