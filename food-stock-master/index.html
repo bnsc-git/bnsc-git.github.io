@@ -68,6 +68,7 @@
         <div class="action-bar">
           <input type="search" id="inventory-search" class="search-input"
             placeholder="🔍 食材を検索..." oninput="renderInventory()">
+          <button class="btn btn-secondary btn-sm" onclick="toggleAllInventory()">全選択/解除</button>
           <button class="btn btn-primary btn-circle" onclick="openAddInventoryModal()">＋</button>
         </div>
         <div class="bulk-bar" id="inventory-bulk-bar" style="display:none">
@@ -83,6 +84,7 @@
         <div class="action-bar">
           <button class="btn btn-primary" onclick="openAddShoppingModal()">＋ リストに追加</button>
           <button class="btn btn-success" onclick="openCheckoutModal()">🛒 食材へ追加</button>
+          <button class="btn btn-secondary btn-sm" onclick="toggleAllShopping()">全選択/解除</button>
           <button class="btn btn-amazon" onclick="openAmazonSearch()">Amazonで探す</button>
           <button class="btn btn-danger" onclick="deleteBulkShopping()" title="チェックした食材を一括削除">🗑️</button>
         </div>

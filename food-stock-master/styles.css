@@ -2,6 +2,7 @@
    Reset & Variables
 ==================================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
 
 :root {
   --primary:       #16a34a;
@@ -299,7 +300,7 @@ body {
 .btn-ghost     { background: transparent; color: var(--primary); padding: 0 8px; }
 
 .btn-sm   { height: 32px; font-size: 12px; padding: 0 12px; border-radius: 8px; }
-.btn-full { width: 100%; }
+.btn-full { width: 100%; justify-content: center; }
 .btn-circle {
   width: 40px;
   height: 40px;
@@ -453,17 +454,19 @@ body {
   gap: 8px;
   padding: 9px 0;
   border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 .checkout-row:last-child { border-bottom: none; }
-.checkout-name { flex: 1; font-size: 13px; font-weight: 600; min-width: 0; }
-.checkout-qty  { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
-.checkout-date { font-size: 12px; }
-.checkout-date input {
+.checkout-left { display: flex; flex-direction: column; flex: 1; min-width: 80px; gap: 1px; }
+.checkout-name { font-size: 13px; font-weight: 600; }
+.checkout-qty  { font-size: 11px; color: var(--text-muted); }
+.checkout-date { display: flex; align-items: center; gap: 3px; }
+.checkout-date input[type="date"] {
   padding: 4px 6px;
   border: 1.5px solid var(--border);
   border-radius: 6px;
   font-size: 12px;
-  width: 130px;
+  width: 128px;
 }
 
 /* ====================================================

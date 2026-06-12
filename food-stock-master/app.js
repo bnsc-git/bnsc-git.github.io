@@ -373,6 +373,22 @@ function deleteSelectedInventory() {
   renderAlerts();
 }
 
+function toggleAllInventory() {
+  const q = (document.getElementById('inventory-search')?.value || '').toLowerCase();
+  const visible = STATE.inventory.filter(i => i.quantity > 0 && (!q || i.name.toLowerCase().includes(q)));
+  const allSel = visible.length > 0 && visible.every(i => inventorySelected.has(i.id));
+  visible.forEach(i => { if (allSel) inventorySelected.delete(i.id); else inventorySelected.add(i.id); });
+  updateInventoryBulkBar();
+  renderInventory();
+}
+
+function toggleAllShopping() {
+  const allChecked = STATE.shoppingList.length > 0 && STATE.shoppingList.every(i => i.checked);
+  STATE.shoppingList.forEach(i => { i.checked = !allChecked; });
+  persist();
+  renderShoppingList();
+}
+
 function openAddInventoryModal() {
   refreshNameDatalist();
   const defaultExpiry = new Date();
@@ -598,7 +614,12 @@ function addShoppingItem() {
   const unit = document.getElementById('sh-unit').value.trim();
   if (!name) { alert('食材名を入力してください'); return; }
 
-  STATE.shoppingList.push({ id: uid(), name, quantity: qty, unit, checked: false, struck: false });
+  const existing = STATE.shoppingList.find(i => i.name === name && i.unit === unit);
+  if (existing) {
+    existing.quantity = +(existing.quantity + qty).toFixed(3);
+  } else {
+    STATE.shoppingList.push({ id: uid(), name, quantity: qty, unit, checked: false, struck: false });
+  }
   persist();
   closeModal();
   renderShoppingList();
@@ -614,27 +635,43 @@ function openAmazonSearch() {
 
 function openCheckoutModal() {
   if (!STATE.shoppingList.length) { alert('買い物リストが空です'); return; }
+  const targets = STATE.shoppingList.filter(i => i.checked);
+  if (!targets.length) { alert('食材へ追加する食材にチェックを入れてください'); return; }
 
-  const rows = STATE.shoppingList.map(item => {
+  const rows = targets.map(item => {
     const suggested = inferExpiryDate(item.name);
     return `<div class="checkout-row">
-      <span class="checkout-name">${escHtml(item.name)}</span>
-      <span class="checkout-qty">${item.quantity}${escHtml(item.unit)}</span>
+      <div class="checkout-left">
+        <span class="checkout-name">${escHtml(item.name)}</span>
+        <span class="checkout-qty">${item.quantity}${escHtml(item.unit)}</span>
+      </div>
       <div class="checkout-date">
+        <button type="button" class="qty-btn" onclick="adjustDate('co-${item.id}',-1)">−</button>
         <input type="date" id="co-${item.id}" value="${suggested}" min="${todayStr()}">
+        <button type="button" class="qty-btn" onclick="adjustDate('co-${item.id}',1)">＋</button>
       </div>
     </div>`;
   }).join('');
 
   showModal('食材へ追加', `
     <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
-      賞味期限を確認して一括で在庫へ追加します
+      チェックした ${targets.length} 件の賞味期限を確認して在庫へ追加します
     </p>
     ${rows}
     <div style="margin-top:14px">
       <button class="btn btn-primary btn-full" onclick="checkoutAll()">✅ 食材へ追加する</button>
     </div>
   `);
+}
+
+function adjustDate(inputId, delta) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const d = new Date((el.value || todayStr()) + 'T00:00:00');
+  d.setDate(d.getDate() + delta);
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (d < today) d.setTime(today.getTime());
+  el.value = d.toISOString().split('T')[0];
 }
 
 function inferExpiryDate(name) {
@@ -650,7 +687,8 @@ function inferExpiryDate(name) {
 }
 
 function checkoutAll() {
-  STATE.shoppingList.forEach(item => {
+  const targets = STATE.shoppingList.filter(i => i.checked);
+  targets.forEach(item => {
     const input    = document.getElementById(`co-${item.id}`);
     const expiry   = input ? input.value : inferExpiryDate(item.name);
     const prevItem = STATE.inventory.find(i => i.name === item.name);
@@ -663,7 +701,7 @@ function checkoutAll() {
     });
   });
 
-  STATE.shoppingList = [];
+  STATE.shoppingList = STATE.shoppingList.filter(i => !i.checked);
   persist();
   closeModal();
   renderShoppingList();
@@ -777,26 +815,33 @@ function cookRecipe(id) {
   const recipe = STATE.customRecipes.find(r => r.id === id);
   if (!recipe) return;
 
-  // Check stock
+  // Check stock — unit-aware
   const missing = recipe.ingredients
     .map(ing => {
-      const available = STATE.inventory
-        .filter(i => i.name === ing.name && i.quantity > 0)
-        .reduce((s, i) => s + i.quantity, 0);
+      const sameUnit = STATE.inventory.filter(i => i.name === ing.name && i.quantity > 0 && i.unit === ing.unit);
+      const diffUnit = STATE.inventory.filter(i => i.name === ing.name && i.quantity > 0 && i.unit !== ing.unit);
+      if (!sameUnit.length && !diffUnit.length) {
+        return `${ing.name}（在庫なし）`;
+      }
+      if (!sameUnit.length) {
+        const units = [...new Set(diffUnit.map(i => i.unit))].join('/');
+        return `${ing.name}（在庫の単位が違います: ${units} → レシピは ${ing.unit}）`;
+      }
+      const available = sameUnit.reduce((s, i) => s + i.quantity, 0);
       return available < ing.quantity
         ? `${ing.name}（必要: ${ing.quantity}${ing.unit}、在庫: ${available.toFixed(1)}${ing.unit}）`
         : null;
     })
     .filter(Boolean);
 
-  if (missing.length && !confirm(`以下の食材が不足しています:\n${missing.join('\n')}\n\n続けますか？`)) return;
+  if (missing.length && !confirm(`以下の食材を確認してください:\n${missing.join('\n')}\n\n続けますか？`)) return;
 
   const nutrientsConsumed = { protein:0, fat:0, carbs:0, vitamins:0, minerals:0 };
 
   recipe.ingredients.forEach(ing => {
     let remaining = ing.quantity;
     const stocks = STATE.inventory
-      .filter(i => i.name === ing.name && i.quantity > 0)
+      .filter(i => i.name === ing.name && i.quantity > 0 && i.unit === ing.unit)
       .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate)); // FIFO: oldest first
 
     stocks.forEach(stock => {
