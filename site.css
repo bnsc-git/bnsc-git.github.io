@@ -364,6 +364,19 @@ body {
   font-size: 13px;
   color: var(--text-muted);
 }
+.kofi-footer {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff5e5b;
+  text-decoration: none;
+  padding: 6px 16px;
+  border: 1.5px solid #ff5e5b;
+  border-radius: 20px;
+  transition: background .15s, color .15s;
+}
+.kofi-footer:hover { background: #ff5e5b; color: #fff; }
 
 /* ---- Utilities ---- */
 .mt-12 { margin-top: 12px; }
