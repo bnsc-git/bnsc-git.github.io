@@ -357,25 +357,32 @@ function openAddInventoryModal() {
 
 function autoFillInventoryHistory(name) {
   const matches = STATE.inventory.filter(i => i.name === name);
-  if (!matches.length) return;
-  const latest = matches.sort((a,b) => new Date(b.registered_at)-new Date(a.registered_at))[0];
-  if (latest.unit) document.getElementById('inv-unit').value = latest.unit;
-
-  // Infer expiry from average shelf life
-  const withDates = matches.filter(i => i.registered_at && i.expiryDate);
-  if (withDates.length) {
-    const avg = withDates.reduce((s,i) =>
-      s + (new Date(i.expiryDate) - new Date(i.registered_at)) / 86400000, 0
-    ) / withDates.length;
-    const suggested = new Date();
-    suggested.setDate(suggested.getDate() + Math.max(1, Math.round(avg)));
-    document.getElementById('inv-expiry').value = suggested.toISOString().split('T')[0];
-  }
-  // Pre-fill nutrients from last entry
-  if (latest.nutrients) {
+  if (matches.length) {
+    const latest = matches.sort((a,b) => new Date(b.registered_at)-new Date(a.registered_at))[0];
+    if (latest.unit) document.getElementById('inv-unit').value = latest.unit;
+    const withDates = matches.filter(i => i.registered_at && i.expiryDate);
+    if (withDates.length) {
+      const avg = withDates.reduce((s,i) =>
+        s + (new Date(i.expiryDate) - new Date(i.registered_at)) / 86400000, 0
+      ) / withDates.length;
+      const suggested = new Date();
+      suggested.setDate(suggested.getDate() + Math.max(1, Math.round(avg)));
+      document.getElementById('inv-expiry').value = suggested.toISOString().split('T')[0];
+    }
+    if (latest.nutrients) {
+      ['protein','fat','carbs','vitamins','minerals'].forEach(k => {
+        const el = document.getElementById(`nut-${k}`);
+        if (el) el.value = latest.nutrients[k] || 0;
+      });
+    }
+  } else {
+    // 登録履歴がなければ食材DBから栄養値・単位を補完
+    const db = INGREDIENT_DB[name];
+    if (!db) return;
+    if (db.unit) document.getElementById('inv-unit').value = db.unit;
     ['protein','fat','carbs','vitamins','minerals'].forEach(k => {
       const el = document.getElementById(`nut-${k}`);
-      if (el) el.value = latest.nutrients[k] || 0;
+      if (el) el.value = db.nutrients[k] || 0;
     });
   }
 }
@@ -798,10 +805,256 @@ function escJs(str) {
 }
 
 // ====================================================
+// INGREDIENT DATABASE
+// ====================================================
+const INGREDIENT_DB = {
+  // 肉類
+  '牛肉':          { unit:'g',    nutrients:{protein:4,fat:3,carbs:0,vitamins:1,minerals:2} },
+  '牛バラ肉':      { unit:'g',    nutrients:{protein:3,fat:4,carbs:0,vitamins:1,minerals:2} },
+  '豚肉':          { unit:'g',    nutrients:{protein:4,fat:3,carbs:0,vitamins:2,minerals:2} },
+  '豚バラ肉':      { unit:'g',    nutrients:{protein:3,fat:5,carbs:0,vitamins:2,minerals:2} },
+  '豚ロース':      { unit:'g',    nutrients:{protein:4,fat:2,carbs:0,vitamins:2,minerals:2} },
+  '豚ひき肉':      { unit:'g',    nutrients:{protein:3,fat:4,carbs:0,vitamins:2,minerals:2} },
+  '鶏もも肉':      { unit:'g',    nutrients:{protein:4,fat:2,carbs:0,vitamins:2,minerals:2} },
+  '鶏むね肉':      { unit:'g',    nutrients:{protein:5,fat:1,carbs:0,vitamins:2,minerals:2} },
+  '合い挽き肉':    { unit:'g',    nutrients:{protein:3,fat:3,carbs:0,vitamins:1,minerals:2} },
+  '豚ロースカツ':  { unit:'枚',   nutrients:{protein:4,fat:3,carbs:2,vitamins:1,minerals:2} },
+  'チャーシュー':  { unit:'g',    nutrients:{protein:3,fat:3,carbs:1,vitamins:1,minerals:2} },
+  'ウインナー':    { unit:'本',   nutrients:{protein:2,fat:4,carbs:1,vitamins:1,minerals:2} },
+  'ベーコン':      { unit:'枚',   nutrients:{protein:2,fat:5,carbs:0,vitamins:2,minerals:2} },
+  // 魚介類
+  '鮭':            { unit:'切れ', nutrients:{protein:4,fat:3,carbs:0,vitamins:3,minerals:3} },
+  'さば':          { unit:'切れ', nutrients:{protein:4,fat:4,carbs:0,vitamins:3,minerals:3} },
+  'ぶり':          { unit:'切れ', nutrients:{protein:4,fat:4,carbs:0,vitamins:3,minerals:3} },
+  'アジ':          { unit:'尾',   nutrients:{protein:4,fat:2,carbs:0,vitamins:3,minerals:3} },
+  'えび':          { unit:'尾',   nutrients:{protein:5,fat:1,carbs:0,vitamins:2,minerals:3} },
+  'ちくわ':        { unit:'本',   nutrients:{protein:2,fat:1,carbs:3,vitamins:1,minerals:2} },
+  // 豆腐・大豆製品
+  '豆腐':          { unit:'丁',   nutrients:{protein:2,fat:1,carbs:1,vitamins:1,minerals:3} },
+  '厚揚げ':        { unit:'枚',   nutrients:{protein:3,fat:3,carbs:1,vitamins:1,minerals:3} },
+  '油揚げ':        { unit:'枚',   nutrients:{protein:2,fat:4,carbs:1,vitamins:1,minerals:2} },
+  '大豆':          { unit:'g',    nutrients:{protein:3,fat:2,carbs:2,vitamins:2,minerals:3} },
+  // 卵・乳製品
+  '卵':            { unit:'個',   nutrients:{protein:4,fat:3,carbs:0,vitamins:3,minerals:2} },
+  'ゆで卵':        { unit:'個',   nutrients:{protein:4,fat:3,carbs:0,vitamins:3,minerals:2} },
+  'バター':        { unit:'g',    nutrients:{protein:0,fat:5,carbs:0,vitamins:2,minerals:0} },
+  '牛乳':          { unit:'ml',   nutrients:{protein:2,fat:2,carbs:1,vitamins:2,minerals:3} },
+  // 野菜類
+  'じゃがいも':    { unit:'個',   nutrients:{protein:1,fat:0,carbs:4,vitamins:3,minerals:2} },
+  'さつまいも':    { unit:'本',   nutrients:{protein:1,fat:0,carbs:4,vitamins:3,minerals:2} },
+  'たまねぎ':      { unit:'個',   nutrients:{protein:0,fat:0,carbs:2,vitamins:2,minerals:1} },
+  'にんじん':      { unit:'本',   nutrients:{protein:0,fat:0,carbs:2,vitamins:5,minerals:1} },
+  'キャベツ':      { unit:'個',   nutrients:{protein:1,fat:0,carbs:1,vitamins:3,minerals:1} },
+  'もやし':        { unit:'袋',   nutrients:{protein:1,fat:0,carbs:1,vitamins:2,minerals:1} },
+  'ほうれん草':    { unit:'袋',   nutrients:{protein:2,fat:0,carbs:1,vitamins:5,minerals:4} },
+  '小松菜':        { unit:'袋',   nutrients:{protein:1,fat:0,carbs:1,vitamins:5,minerals:4} },
+  'ごぼう':        { unit:'本',   nutrients:{protein:1,fat:0,carbs:3,vitamins:1,minerals:2} },
+  'れんこん':      { unit:'節',   nutrients:{protein:1,fat:0,carbs:3,vitamins:3,minerals:2} },
+  'なす':          { unit:'本',   nutrients:{protein:0,fat:0,carbs:1,vitamins:2,minerals:1} },
+  'ピーマン':      { unit:'個',   nutrients:{protein:1,fat:0,carbs:1,vitamins:5,minerals:1} },
+  'かぼちゃ':      { unit:'個',   nutrients:{protein:1,fat:0,carbs:3,vitamins:5,minerals:2} },
+  'だいこん':      { unit:'本',   nutrients:{protein:0,fat:0,carbs:1,vitamins:2,minerals:1} },
+  'しいたけ':      { unit:'枚',   nutrients:{protein:1,fat:0,carbs:1,vitamins:3,minerals:2} },
+  'しめじ':        { unit:'袋',   nutrients:{protein:1,fat:0,carbs:1,vitamins:3,minerals:2} },
+  'にら':          { unit:'束',   nutrients:{protein:1,fat:0,carbs:1,vitamins:4,minerals:2} },
+  'ねぎ':          { unit:'本',   nutrients:{protein:0,fat:0,carbs:1,vitamins:3,minerals:1} },
+  'きゅうり':      { unit:'本',   nutrients:{protein:0,fat:0,carbs:1,vitamins:2,minerals:1} },
+  '山芋':          { unit:'g',    nutrients:{protein:1,fat:0,carbs:3,vitamins:2,minerals:2} },
+  'さやいんげん':  { unit:'g',    nutrients:{protein:1,fat:0,carbs:1,vitamins:3,minerals:1} },
+  'しょうが':      { unit:'片',   nutrients:{protein:0,fat:0,carbs:1,vitamins:1,minerals:1} },
+  'にんにく':      { unit:'片',   nutrients:{protein:1,fat:0,carbs:2,vitamins:1,minerals:1} },
+  // 穀物・麺類
+  '米':            { unit:'合',   nutrients:{protein:1,fat:0,carbs:5,vitamins:1,minerals:1} },
+  'ご飯':          { unit:'杯',   nutrients:{protein:1,fat:0,carbs:5,vitamins:1,minerals:1} },
+  'スパゲッティ':  { unit:'g',    nutrients:{protein:2,fat:1,carbs:5,vitamins:1,minerals:1} },
+  '中華麺':        { unit:'玉',   nutrients:{protein:2,fat:1,carbs:5,vitamins:1,minerals:1} },
+  '薄力粉':        { unit:'g',    nutrients:{protein:1,fat:0,carbs:5,vitamins:1,minerals:1} },
+  '餃子の皮':      { unit:'枚',   nutrients:{protein:1,fat:0,carbs:4,vitamins:0,minerals:0} },
+  '春巻きの皮':    { unit:'枚',   nutrients:{protein:1,fat:0,carbs:4,vitamins:0,minerals:0} },
+  '春雨':          { unit:'g',    nutrients:{protein:0,fat:0,carbs:4,vitamins:0,minerals:0} },
+  'パン粉':        { unit:'g',    nutrients:{protein:1,fat:1,carbs:4,vitamins:0,minerals:1} },
+  // その他
+  'こんにゃく':    { unit:'枚',   nutrients:{protein:0,fat:0,carbs:0,vitamins:0,minerals:1} },
+  'しらたき':      { unit:'袋',   nutrients:{protein:0,fat:0,carbs:0,vitamins:0,minerals:1} },
+  'ひじき':        { unit:'g',    nutrients:{protein:1,fat:0,carbs:1,vitamins:3,minerals:5} },
+  '切り干し大根':  { unit:'g',    nutrients:{protein:1,fat:0,carbs:3,vitamins:3,minerals:4} },
+  'わかめ':        { unit:'g',    nutrients:{protein:1,fat:0,carbs:1,vitamins:2,minerals:5} },
+  'マッシュルーム':{ unit:'個',   nutrients:{protein:1,fat:0,carbs:1,vitamins:3,minerals:2} },
+  '天かす':        { unit:'g',    nutrients:{protein:1,fat:3,carbs:3,vitamins:0,minerals:0} },
+};
+
+// ====================================================
+// PRESET RECIPES
+// ====================================================
+const PRESET_RECIPES = [
+  { name:'肉じゃが', description:'牛肉とじゃがいもの定番煮物',
+    ingredients:[{name:'牛肉',quantity:200,unit:'g'},{name:'じゃがいも',quantity:3,unit:'個'},
+      {name:'たまねぎ',quantity:1,unit:'個'},{name:'にんじん',quantity:1,unit:'本'},
+      {name:'しらたき',quantity:1,unit:'袋'}]},
+  { name:'親子丼', description:'鶏肉と卵のとじ丼',
+    ingredients:[{name:'鶏もも肉',quantity:200,unit:'g'},{name:'卵',quantity:3,unit:'個'},
+      {name:'たまねぎ',quantity:0.5,unit:'個'},{name:'ご飯',quantity:2,unit:'杯'}]},
+  { name:'カレーライス', description:'野菜たっぷりの定番カレー',
+    ingredients:[{name:'牛肉',quantity:200,unit:'g'},{name:'じゃがいも',quantity:2,unit:'個'},
+      {name:'にんじん',quantity:1,unit:'本'},{name:'たまねぎ',quantity:1,unit:'個'},
+      {name:'ご飯',quantity:2,unit:'杯'}]},
+  { name:'豚の生姜焼き', description:'甘辛いタレが食欲をそそる定番おかず',
+    ingredients:[{name:'豚ロース',quantity:300,unit:'g'},{name:'たまねぎ',quantity:0.5,unit:'個'},
+      {name:'しょうが',quantity:1,unit:'片'}]},
+  { name:'鶏のから揚げ', description:'サクサクジューシーな揚げ物',
+    ingredients:[{name:'鶏もも肉',quantity:400,unit:'g'},{name:'しょうが',quantity:1,unit:'片'},
+      {name:'にんにく',quantity:1,unit:'片'},{name:'薄力粉',quantity:30,unit:'g'}]},
+  { name:'麻婆豆腐', description:'ピリ辛でご飯が進む中華料理',
+    ingredients:[{name:'豆腐',quantity:1,unit:'丁'},{name:'豚ひき肉',quantity:150,unit:'g'},
+      {name:'にんにく',quantity:2,unit:'片'},{name:'しょうが',quantity:1,unit:'片'},
+      {name:'ねぎ',quantity:1,unit:'本'}]},
+  { name:'野菜炒め', description:'冷蔵庫の野菜で手軽に一品',
+    ingredients:[{name:'キャベツ',quantity:0.25,unit:'個'},{name:'もやし',quantity:1,unit:'袋'},
+      {name:'にんじん',quantity:0.5,unit:'本'},{name:'豚肉',quantity:150,unit:'g'}]},
+  { name:'卵焼き', description:'甘めの出汁巻き卵',
+    ingredients:[{name:'卵',quantity:3,unit:'個'}]},
+  { name:'豚汁', description:'具だくさんの味噌汁',
+    ingredients:[{name:'豚バラ肉',quantity:150,unit:'g'},{name:'だいこん',quantity:0.25,unit:'本'},
+      {name:'にんじん',quantity:0.5,unit:'本'},{name:'じゃがいも',quantity:1,unit:'個'},
+      {name:'ねぎ',quantity:1,unit:'本'},{name:'豆腐',quantity:0.5,unit:'丁'}]},
+  { name:'炊き込みご飯', description:'具材の旨味が染み込んだご飯',
+    ingredients:[{name:'米',quantity:2,unit:'合'},{name:'にんじん',quantity:1,unit:'本'},
+      {name:'しいたけ',quantity:4,unit:'枚'},{name:'こんにゃく',quantity:0.5,unit:'枚'},
+      {name:'鶏もも肉',quantity:100,unit:'g'},{name:'ごぼう',quantity:0.5,unit:'本'}]},
+  { name:'ハンバーグ', description:'ふっくらジューシーな洋食の定番',
+    ingredients:[{name:'合い挽き肉',quantity:300,unit:'g'},{name:'たまねぎ',quantity:0.5,unit:'個'},
+      {name:'卵',quantity:1,unit:'個'},{name:'パン粉',quantity:30,unit:'g'},
+      {name:'牛乳',quantity:30,unit:'ml'}]},
+  { name:'焼き鮭', description:'シンプルで栄養満点の主菜',
+    ingredients:[{name:'鮭',quantity:2,unit:'切れ'}]},
+  { name:'サバの味噌煮', description:'こっくり甘辛く煮た青魚料理',
+    ingredients:[{name:'さば',quantity:2,unit:'切れ'},{name:'しょうが',quantity:1,unit:'片'}]},
+  { name:'チャーハン', description:'パラパラに仕上げる炒めご飯',
+    ingredients:[{name:'ご飯',quantity:2,unit:'杯'},{name:'卵',quantity:2,unit:'個'},
+      {name:'ねぎ',quantity:1,unit:'本'},{name:'チャーシュー',quantity:80,unit:'g'}]},
+  { name:'ポテトサラダ', description:'マヨネーズとじゃがいもの定番サラダ',
+    ingredients:[{name:'じゃがいも',quantity:3,unit:'個'},{name:'にんじん',quantity:0.5,unit:'本'},
+      {name:'きゅうり',quantity:1,unit:'本'},{name:'たまねぎ',quantity:0.25,unit:'個'}]},
+  { name:'きんぴらごぼう', description:'シャキシャキ食感の和風常備菜',
+    ingredients:[{name:'ごぼう',quantity:1,unit:'本'},{name:'にんじん',quantity:0.5,unit:'本'}]},
+  { name:'ほうれん草のお浸し', description:'定番の和の副菜',
+    ingredients:[{name:'ほうれん草',quantity:1,unit:'袋'}]},
+  { name:'かぼちゃの煮物', description:'ほっくり甘い秋の煮物',
+    ingredients:[{name:'かぼちゃ',quantity:0.25,unit:'個'}]},
+  { name:'回鍋肉', description:'キャベツと豚バラのピリ辛炒め',
+    ingredients:[{name:'豚バラ肉',quantity:200,unit:'g'},{name:'キャベツ',quantity:0.25,unit:'個'},
+      {name:'ピーマン',quantity:2,unit:'個'},{name:'ねぎ',quantity:1,unit:'本'},
+      {name:'にんにく',quantity:2,unit:'片'}]},
+  { name:'酢豚', description:'甘酢あんかけの中華料理',
+    ingredients:[{name:'豚ロース',quantity:250,unit:'g'},{name:'たまねぎ',quantity:0.5,unit:'個'},
+      {name:'にんじん',quantity:0.5,unit:'本'},{name:'ピーマン',quantity:2,unit:'個'}]},
+  { name:'鶏の照り焼き', description:'甘辛タレでご飯が進む定番おかず',
+    ingredients:[{name:'鶏もも肉',quantity:300,unit:'g'}]},
+  { name:'ナポリタン', description:'ケチャップベースの懐かしい洋食',
+    ingredients:[{name:'スパゲッティ',quantity:200,unit:'g'},{name:'ウインナー',quantity:4,unit:'本'},
+      {name:'たまねぎ',quantity:0.5,unit:'個'},{name:'ピーマン',quantity:2,unit:'個'},
+      {name:'マッシュルーム',quantity:4,unit:'個'}]},
+  { name:'焼きそば', description:'ソースの香ばしい炒め麺',
+    ingredients:[{name:'中華麺',quantity:2,unit:'玉'},{name:'豚肉',quantity:150,unit:'g'},
+      {name:'キャベツ',quantity:0.25,unit:'個'},{name:'もやし',quantity:1,unit:'袋'},
+      {name:'にんじん',quantity:0.3,unit:'本'}]},
+  { name:'お好み焼き', description:'具だくさんの関西風お好み焼き',
+    ingredients:[{name:'薄力粉',quantity:150,unit:'g'},{name:'卵',quantity:2,unit:'個'},
+      {name:'キャベツ',quantity:0.25,unit:'個'},{name:'豚バラ肉',quantity:150,unit:'g'},
+      {name:'山芋',quantity:50,unit:'g'},{name:'天かす',quantity:20,unit:'g'}]},
+  { name:'餃子', description:'手作りのジューシー焼き餃子',
+    ingredients:[{name:'豚ひき肉',quantity:200,unit:'g'},{name:'キャベツ',quantity:0.25,unit:'個'},
+      {name:'ねぎ',quantity:1,unit:'本'},{name:'にんにく',quantity:2,unit:'片'},
+      {name:'しょうが',quantity:1,unit:'片'},{name:'餃子の皮',quantity:30,unit:'枚'}]},
+  { name:'牛丼', description:'甘辛い牛肉とたまねぎのどんぶり',
+    ingredients:[{name:'牛バラ肉',quantity:300,unit:'g'},{name:'たまねぎ',quantity:1,unit:'個'},
+      {name:'ご飯',quantity:2,unit:'杯'}]},
+  { name:'かつ丼', description:'サクサクのカツを卵でとじたどんぶり',
+    ingredients:[{name:'豚ロースカツ',quantity:2,unit:'枚'},{name:'卵',quantity:3,unit:'個'},
+      {name:'たまねぎ',quantity:0.5,unit:'個'},{name:'ご飯',quantity:2,unit:'杯'}]},
+  { name:'天ぷら', description:'サクサクの揚げ物盛り合わせ',
+    ingredients:[{name:'えび',quantity:8,unit:'尾'},{name:'さつまいも',quantity:1,unit:'本'},
+      {name:'なす',quantity:1,unit:'本'},{name:'ピーマン',quantity:2,unit:'個'},
+      {name:'薄力粉',quantity:150,unit:'g'},{name:'卵',quantity:1,unit:'個'}]},
+  { name:'コロッケ', description:'サクサクのじゃがいもコロッケ',
+    ingredients:[{name:'じゃがいも',quantity:4,unit:'個'},{name:'合い挽き肉',quantity:100,unit:'g'},
+      {name:'たまねぎ',quantity:0.5,unit:'個'},{name:'卵',quantity:2,unit:'個'},
+      {name:'パン粉',quantity:60,unit:'g'}]},
+  { name:'筑前煮', description:'根菜と鶏肉の彩り豊かな煮物',
+    ingredients:[{name:'鶏もも肉',quantity:250,unit:'g'},{name:'れんこん',quantity:1,unit:'節'},
+      {name:'にんじん',quantity:1,unit:'本'},{name:'ごぼう',quantity:0.5,unit:'本'},
+      {name:'こんにゃく',quantity:1,unit:'枚'},{name:'しいたけ',quantity:4,unit:'枚'},
+      {name:'さやいんげん',quantity:50,unit:'g'}]},
+  { name:'茄子の味噌炒め', description:'ご飯に合う甘辛茄子炒め',
+    ingredients:[{name:'なす',quantity:3,unit:'本'},{name:'ピーマン',quantity:2,unit:'個'},
+      {name:'豚ひき肉',quantity:100,unit:'g'}]},
+  { name:'ひじきの煮物', description:'ミネラル豊富な和の常備菜',
+    ingredients:[{name:'ひじき',quantity:30,unit:'g'},{name:'油揚げ',quantity:1,unit:'枚'},
+      {name:'にんじん',quantity:0.5,unit:'本'},{name:'大豆',quantity:50,unit:'g'}]},
+  { name:'切り干し大根の煮物', description:'食物繊維たっぷりの常備菜',
+    ingredients:[{name:'切り干し大根',quantity:40,unit:'g'},{name:'にんじん',quantity:0.5,unit:'本'},
+      {name:'油揚げ',quantity:1,unit:'枚'}]},
+  { name:'冷奴', description:'夏にぴったりのさっぱり豆腐料理',
+    ingredients:[{name:'豆腐',quantity:1,unit:'丁'},{name:'ねぎ',quantity:0.5,unit:'本'},
+      {name:'しょうが',quantity:1,unit:'片'}]},
+  { name:'厚揚げの煮物', description:'だしを吸った厚揚げの煮物',
+    ingredients:[{name:'厚揚げ',quantity:2,unit:'枚'},{name:'ほうれん草',quantity:0.5,unit:'袋'}]},
+  { name:'春巻き', description:'パリパリの皮が美味しい揚げ物',
+    ingredients:[{name:'豚ひき肉',quantity:150,unit:'g'},{name:'にら',quantity:1,unit:'束'},
+      {name:'もやし',quantity:1,unit:'袋'},{name:'春雨',quantity:30,unit:'g'},
+      {name:'春巻きの皮',quantity:10,unit:'枚'}]},
+  { name:'豚の角煮', description:'柔らかくとろける豚バラの煮込み',
+    ingredients:[{name:'豚バラ肉',quantity:500,unit:'g'},{name:'ゆで卵',quantity:4,unit:'個'},
+      {name:'しょうが',quantity:2,unit:'片'}]},
+  { name:'豆腐の味噌汁', description:'定番の豆腐とわかめの味噌汁',
+    ingredients:[{name:'豆腐',quantity:0.5,unit:'丁'},{name:'ねぎ',quantity:1,unit:'本'},
+      {name:'わかめ',quantity:5,unit:'g'}]},
+  { name:'なすの煮浸し', description:'出汁を含んだジューシーな副菜',
+    ingredients:[{name:'なす',quantity:4,unit:'本'},{name:'しょうが',quantity:1,unit:'片'}]},
+  { name:'白和え', description:'豆腐ベースのクリーミーな和え物',
+    ingredients:[{name:'豆腐',quantity:1,unit:'丁'},{name:'ほうれん草',quantity:1,unit:'袋'},
+      {name:'にんじん',quantity:0.5,unit:'本'},{name:'こんにゃく',quantity:0.5,unit:'枚'}]},
+  { name:'鶏のみそ焼き', description:'みそだれで焼いた風味豊かなチキン',
+    ingredients:[{name:'鶏もも肉',quantity:300,unit:'g'}]},
+  { name:'ぶり大根', description:'ぶりの旨味が大根に染み込んだ煮物',
+    ingredients:[{name:'ぶり',quantity:3,unit:'切れ'},{name:'だいこん',quantity:0.5,unit:'本'},
+      {name:'しょうが',quantity:2,unit:'片'}]},
+  { name:'鮭のホイル焼き', description:'ホイルで蒸し焼きにした野菜たっぷりの一品',
+    ingredients:[{name:'鮭',quantity:2,unit:'切れ'},{name:'たまねぎ',quantity:0.5,unit:'個'},
+      {name:'にんじん',quantity:0.5,unit:'本'},{name:'しめじ',quantity:1,unit:'袋'},
+      {name:'バター',quantity:20,unit:'g'}]},
+  { name:'豚バラ大根', description:'豚バラと大根のシンプル煮物',
+    ingredients:[{name:'豚バラ肉',quantity:200,unit:'g'},{name:'だいこん',quantity:0.5,unit:'本'},
+      {name:'ねぎ',quantity:1,unit:'本'},{name:'しょうが',quantity:1,unit:'片'}]},
+  { name:'小松菜の炒め物', description:'油揚げと合わせた栄養豊富な炒め物',
+    ingredients:[{name:'小松菜',quantity:1,unit:'袋'},{name:'油揚げ',quantity:1,unit:'枚'},
+      {name:'しょうが',quantity:1,unit:'片'}]},
+  { name:'キャベツの味噌炒め', description:'ベーコンとキャベツのボリューム炒め',
+    ingredients:[{name:'キャベツ',quantity:0.5,unit:'個'},{name:'ベーコン',quantity:4,unit:'枚'},
+      {name:'にんにく',quantity:2,unit:'片'}]},
+  { name:'もやし炒め', description:'シャキシャキもやしとにらのスピード炒め',
+    ingredients:[{name:'もやし',quantity:2,unit:'袋'},{name:'にら',quantity:0.5,unit:'束'},
+      {name:'豚肉',quantity:100,unit:'g'}]},
+  { name:'アジの塩焼き', description:'シンプルに塩で焼いた青魚',
+    ingredients:[{name:'アジ',quantity:2,unit:'尾'}]},
+  { name:'おでん', description:'寒い日に温まる具だくさんの鍋料理',
+    ingredients:[{name:'だいこん',quantity:0.5,unit:'本'},{name:'こんにゃく',quantity:1,unit:'枚'},
+      {name:'卵',quantity:4,unit:'個'},{name:'ちくわ',quantity:4,unit:'本'},
+      {name:'厚揚げ',quantity:2,unit:'枚'}]},
+  { name:'豆腐ステーキ', description:'こんがり焼いた豆腐のきのこあんかけ',
+    ingredients:[{name:'豆腐',quantity:1,unit:'丁'},{name:'しいたけ',quantity:2,unit:'枚'},
+      {name:'ねぎ',quantity:1,unit:'本'},{name:'にんにく',quantity:1,unit:'片'}]},
+];
+
+// ====================================================
 // INIT
 // ====================================================
 function init() {
   loadState();
+  if (!STATE.customRecipes.length) {
+    STATE.customRecipes = PRESET_RECIPES.map(r => ({ ...r, id: uid() }));
+    persist();
+  }
   renderDashboard();
   updateShoppingBadge();
   refreshNameDatalist();
