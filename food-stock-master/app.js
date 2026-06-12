@@ -122,16 +122,7 @@ function renderTab(name) {
     case 'inventory': renderInventory(); break;
     case 'shopping':  renderShoppingList(); break;
     case 'recipes':   renderRecipes(); break;
-    case 'settings':  renderSettings(); break;
   }
-}
-
-function renderSettings() {
-  const kofi   = document.getElementById('kofi-btn');
-  const paypay = document.getElementById('paypay-btn');
-  if (kofi)   kofi.href   = `https://ko-fi.com/${AFFILIATE.kofi}`;
-  if (paypay) paypay.href = AFFILIATE.paypay || '#';
-  if (paypay && !AFFILIATE.paypay) paypay.style.display = 'none';
 }
 
 // ====================================================
@@ -514,6 +505,13 @@ function addShoppingItem() {
   refreshNameDatalist();
 }
 
+function openAmazonSearch() {
+  if (!STATE.shoppingList.length) { alert('買い物リストが空です'); return; }
+  const targets = STATE.shoppingList.filter(i => i.checked);
+  if (!targets.length) { alert('チェックした食材をAmazonで検索します。\nリストの食材にチェックを入れてください。'); return; }
+  window.open(affiliateAmazon(targets.map(i => i.name).join(' ')), '_blank');
+}
+
 function openCheckoutModal() {
   if (!STATE.shoppingList.length) { alert('買い物リストが空です'); return; }
 
@@ -643,12 +641,6 @@ function renderRecipes() {
         <button class="btn btn-secondary btn-sm" data-recipe="${escHtml(recipe.name)}"
           onclick="searchRecipe(this)">🔍 検索</button>
         <button class="btn btn-danger btn-sm" onclick="deleteRecipe('${recipe.id}')">🗑️</button>
-      </div>
-      <div class="affiliate-strip">
-        <span class="affiliate-label">購入：</span>
-        <a href="${affiliateAmazon(recipe.name + ' 調味料')}" target="_blank" rel="noopener sponsored" class="affiliate-link amazon">🛒 調味料</a>
-        <a href="${affiliateAmazon(recipe.name + ' キッチン用品')}" target="_blank" rel="noopener sponsored" class="affiliate-link amazon-sub">🍳 用品</a>
-        <a href="${affiliateRakuten(recipe.name + ' 食材')}" target="_blank" rel="noopener sponsored" class="affiliate-link rakuten">🛍️ 楽天</a>
       </div>
     </div>`;
   }).join('');

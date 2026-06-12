@@ -19,7 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function markActiveNav() {
   const path = location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.nav-links a').forEach(a => {
+  // btn-nav はアクティブ表示の対象外（独自の背景色スタイルを維持）
+  document.querySelectorAll('.nav-links a:not(.btn-nav)').forEach(a => {
     const href = a.getAttribute('href').split('/').pop() || 'index.html';
     if (href === path) a.style.color = 'var(--primary)';
   });

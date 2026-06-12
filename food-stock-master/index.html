@@ -58,7 +58,7 @@
           <div class="card-title">🔍 今日のレシピ提案</div>
           <div id="recipe-suggestion" style="margin-bottom:12px"></div>
           <button class="btn btn-primary btn-full" onclick="openGoogleRecipe()">
-            🔎 Googleレシピを検索（新タブ）
+            🔎 レシピを検索
           </button>
         </div>
       </section>
@@ -78,6 +78,7 @@
         <div class="action-bar">
           <button class="btn btn-primary" onclick="openAddShoppingModal()">＋ リストに追加</button>
           <button class="btn btn-success" onclick="openCheckoutModal()">🛒 食材へ追加</button>
+          <button class="btn btn-amazon" onclick="openAmazonSearch()">Amazon</button>
         </div>
         <div id="shopping-list"></div>
       </section>
@@ -110,14 +111,6 @@
           <div class="card-title">🌐 公式サイト</div>
           <a href="https://bnsc-git.github.io" target="_blank" rel="noopener"
             class="btn btn-secondary btn-full">🏠 bnsc-git ホームページを開く</a>
-        </div>
-        <div class="card">
-          <div class="card-title">☕ 開発者を応援する</div>
-          <p class="info-text" style="margin-bottom:12px">このアプリが役に立ったら、コーヒー一杯分のご支援をいただけると開発の励みになります。完全任意です🙏</p>
-          <div class="settings-group">
-            <a id="kofi-btn" href="#" target="_blank" rel="noopener" class="btn btn-kofi btn-full">☕ Ko-fiで応援する</a>
-            <a id="paypay-btn" href="#" target="_blank" rel="noopener" class="btn btn-paypay btn-full">💳 PayPayで応援する</a>
-          </div>
         </div>
         <div class="card">
           <div class="card-title">ℹ️ アプリについて</div>

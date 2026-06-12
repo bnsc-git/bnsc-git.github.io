@@ -76,10 +76,10 @@ body {
 .nav-links a:hover { color: var(--text); background: var(--bg-muted); }
 .nav-links a.btn-nav {
   background: var(--primary);
-  color: #fff;
+  color: #fff !important;
   font-weight: 600;
 }
-.nav-links a.btn-nav:hover { background: var(--primary-dark); }
+.nav-links a.btn-nav:hover { background: var(--primary-dark); color: #fff !important; }
 
 /* Mobile nav */
 .nav-toggle {

@@ -255,6 +255,7 @@ body {
   gap: 8px;
   align-items: center;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 .search-input {
   flex: 1;
@@ -539,9 +540,8 @@ body {
   opacity: .9;
 }
 
-/* Donation buttons */
-.btn-kofi   { background: #ff5e5b; color: #fff; }
-.btn-paypay { background: #00b900; color: #fff; }
+/* Amazon search button */
+.btn-amazon { background: #ff9900; color: #111; font-weight: 700; }
 
 /* ====================================================
    Form Elements

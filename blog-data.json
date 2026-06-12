@@ -1,5 +1,12 @@
 [
   {
+    "slug": "2026-06-12-update",
+    "title": "Food Stock Master アップデート（2026-06-12）",
+    "date": "2026-06-12",
+    "summary": "プリセットレシピ50品・食材DB追加、期限間近レシピの優先表示、買い物タブにAmazon検索ボタン追加、バグ修正など多数のアップデート。",
+    "tags": ["アップデート", "Food Stock Master"]
+  },
+  {
     "slug": "welcome",
     "title": "サイトをオープンしました",
     "date": "2026-06-12",
