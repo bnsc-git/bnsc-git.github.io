@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" id="html-root">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,9 +16,11 @@
       <a href="index.html" class="nav-logo">bnsc-git</a>
       <button class="nav-toggle" id="nav-toggle" aria-label="メニュー">☰</button>
       <ul class="nav-links" id="nav-links">
-        <li><a href="portfolio.html">ポートフォリオ</a></li>
-        <li><a href="blog.html">ブログ</a></li>
-        <li><a href="food-stock-master/index.html" class="btn-nav">🥦 アプリを使う</a></li>
+        <li><a href="portfolio.html" data-i18n="portfolio">ポートフォリオ</a></li>
+        <li><a href="blog.html" data-i18n="blog">ブログ</a></li>
+        <li><a href="food-stock-master/index.html" class="btn-nav" data-i18n="appLink">🥦 アプリを使う</a></li>
+        <li><button id="lang-toggle" onclick="setSiteLang(document.documentElement.lang==='ja'?'en':'ja')"
+          style="background:none;border:1px solid currentColor;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">EN</button></li>
       </ul>
     </nav>
   </header>
@@ -26,12 +28,12 @@
   <!-- Hero -->
   <section class="hero">
     <div class="container">
-      <div class="hero-eyebrow">WEB Developer</div>
+      <div class="hero-eyebrow" data-i18n="heroEyebrow">WEB Developer</div>
       <h1 class="hero-title">bnsc-git</h1>
-      <p class="hero-sub">使いやすくて楽しいWEBアプリを作っています</p>
+      <p class="hero-sub" data-i18n="heroSub">使いやすくて楽しいWEBアプリを作っています</p>
       <div class="hero-actions">
-        <a href="portfolio.html" class="btn btn-primary">ポートフォリオを見る</a>
-        <a href="blog.html" class="btn btn-outline">ブログを読む</a>
+        <a href="portfolio.html" class="btn btn-primary" data-i18n="heroBtnPortfolio">ポートフォリオを見る</a>
+        <a href="blog.html" class="btn btn-outline" data-i18n="heroBtnBlog">ブログを読む</a>
       </div>
     </div>
   </section>
@@ -40,21 +42,21 @@
   <section class="section">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">注目プロジェクト</h2>
-        <a href="portfolio.html" class="section-link">すべて見る →</a>
+        <h2 class="section-title" data-i18n="featuredTitle">注目プロジェクト</h2>
+        <a href="portfolio.html" class="section-link" data-i18n="featuredAll">すべて見る →</a>
       </div>
       <div class="project-featured">
         <div class="project-featured-icon">🥦</div>
         <div>
           <h3>Food Stock Master</h3>
-          <p>食材の在庫・賞味期限をスマートに管理するPWAアプリ。食品ロスを防ぎ、毎日の献立をサポートします。在庫を消費するとレーダーチャートで栄養バランスを可視化。</p>
+          <p data-i18n="featuredDesc">食材の在庫・賞味期限をスマートに管理するPWAアプリ。食品ロスを防ぎ、毎日の献立をサポートします。在庫を消費するとレーダーチャートで栄養バランスを可視化。</p>
           <div class="tags">
             <span class="tag">PWA</span>
             <span class="tag">JavaScript</span>
             <span class="tag">LocalStorage</span>
             <span class="tag">Chart.js</span>
           </div>
-          <a href="food-stock-master/index.html" class="btn btn-primary mt-12">アプリを使う →</a>
+          <a href="food-stock-master/index.html" class="btn btn-primary mt-12" data-i18n="featuredBtn">アプリを使う →</a>
         </div>
       </div>
     </div>
@@ -64,8 +66,8 @@
   <section class="section bg-muted">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">最新のブログ</h2>
-        <a href="blog.html" class="section-link">すべて見る →</a>
+        <h2 class="section-title" data-i18n="latestBlog">最新のブログ</h2>
+        <a href="blog.html" class="section-link" data-i18n="blogAll">すべて見る →</a>
       </div>
       <div id="blog-preview" class="posts-grid"></div>
     </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" id="html-root">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,17 +15,19 @@
       <a href="index.html" class="nav-logo">bnsc-git</a>
       <button class="nav-toggle" id="nav-toggle" aria-label="メニュー">☰</button>
       <ul class="nav-links" id="nav-links">
-        <li><a href="portfolio.html">ポートフォリオ</a></li>
-        <li><a href="blog.html">ブログ</a></li>
-        <li><a href="food-stock-master/index.html" class="btn-nav">🥦 アプリを使う</a></li>
+        <li><a href="portfolio.html" data-i18n="portfolio">ポートフォリオ</a></li>
+        <li><a href="blog.html" data-i18n="blog">ブログ</a></li>
+        <li><a href="food-stock-master/index.html" class="btn-nav" data-i18n="appLink">🥦 アプリを使う</a></li>
+        <li><button id="lang-toggle" onclick="setSiteLang(document.documentElement.lang==='ja'?'en':'ja')"
+          style="background:none;border:1px solid currentColor;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">EN</button></li>
       </ul>
     </nav>
   </header>
 
   <section class="page-hero">
     <div class="container">
-      <h1>ブログ</h1>
-      <p>開発記録・技術メモ・お知らせを発信しています</p>
+      <h1 data-i18n="blogHero">ブログ</h1>
+      <p data-i18n="blogSub">開発記録・技術メモ・お知らせを発信しています</p>
     </div>
   </section>
 
